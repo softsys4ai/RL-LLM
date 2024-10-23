@@ -85,7 +85,7 @@ def weighted_merge_responses(responses, weights):
     
     return weighted_result
 
-def parse_with_ollama(dom_chunks, description):
+def parse(dom_chunks, description):
     prompt = PromptTemplate.from_template(template)
     chain = prompt | model
 
@@ -113,7 +113,7 @@ def parse_with_ollama(dom_chunks, description):
     return weighted_result
 
 
-def scrape_website(website):
+def scrape(website):
 
     chrome_driver_path = "./chromedriver"
     options = webdriver.ChromeOptions()
@@ -153,7 +153,7 @@ def clean_body_content(body_content):
     return cleaned_content
 
 
-def split_dom_content(dom_content, max_length=3000):
+def split_content(dom_content, max_length=3000):
     return [
         dom_content[i : i + max_length] for i in range(0, len(dom_content), max_length)
     ]
