@@ -19,12 +19,8 @@ This project is an **AI Web Scraper** built with Streamlit that leverages the **
 ### Prerequisites
 
 - Python 3.8+
-- [Streamlit](https://streamlit.io/)
-- [Selenium](https://www.selenium.dev/)
-- [BeautifulSoup](https://www.crummy.com/software/BeautifulSoup/)
-- [LangChain OllamaLLM](https://python.langchain.com/)
 - ChromeDriver (Ensure compatibility with your browser version)
-- Additional dependencies in `requirements.txt` (optional)
+- Additional dependencies in `requirements.txt`
 
 ### Steps
 
