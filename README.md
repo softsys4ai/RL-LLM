@@ -20,6 +20,7 @@ This project is an **AI Web Scraper** built with Streamlit that leverages the **
 
 - Python 3.8+
 - ChromeDriver (Ensure compatibility with your browser version)
+- Llama 3.1
 - Additional dependencies in `requirements.txt`
 
 ### Steps
@@ -28,3 +29,15 @@ This project is an **AI Web Scraper** built with Streamlit that leverages the **
    ```bash
    git clone https://github.com/your-username/ai-web-scraper.git
    cd ai-web-scraper
+
+2. Install the required dependencies:
+   ```bash
+   pip install -r requirements.txt
+3. Set up ChromeDriver:
+   - Download the correct version of ChromeDriver for your browser.
+   - Place it in the root directory or specify its path in `parse.py`.
+4. Install Ollama:
+   Download the correct version of Llama 3.1 for your device.
+5. Run the Streamlit app:
+   ```bash
+   streamlit run main.py
