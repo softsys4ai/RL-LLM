@@ -27,7 +27,7 @@ This project is an **AI Web Scraper** built with Streamlit that leverages the **
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/softsys4ai/RL-LLM
+   git clone https://github.com/softsys4ai/RL-LLM.git
    cd RL-LLM
 
 2. Install the required dependencies:
