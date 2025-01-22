@@ -1,31 +1,34 @@
 import streamlit as st
+import torch
+from langchain_ollama import OllamaLLM
+
 from parse import (
-    scrape,
+    search,
     extract_body_content,
     clean_body_content,
     split_content,
     parse,
 )
 
-
+model = OllamaLLM(model="llama3.1")
 # Scrape the website
-description = st.text_area("Describe what you want to know")
-description = description.replace(" ", "+")
-content = scrape(f"https://www.google.com/search?q={description}")
+input_prompt = st.text_area("Describe what you want to know")
+question = input_prompt.replace(" ", "+")
+content = search(f"https://www.google.com/search?q={question}")
 body_content = extract_body_content(content)
 cleaned_content = clean_body_content(body_content)
 # Store the content
-st.session_state.dom_content = cleaned_content
+st.session_state.content = cleaned_content
 
 
 # Ask Questions 
-if "dom_content" in st.session_state:
+if "content" in st.session_state:
 
     if st.button("Let's go"):
-        if description:
+        if question:
             st.write("Analyzing the content...")
 
             # Provide the content with Ollama
-            chunks = split_content(st.session_state.dom_content)
-            parsed_result = parse(chunks, description)
+            chunks = split_content(st.session_state.content)
+            parsed_result = parse(chunks, question)
             st.write(parsed_result)

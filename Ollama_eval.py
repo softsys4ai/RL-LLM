@@ -17,11 +17,6 @@ template = (
     "3. Answer as short as possible."
 )
 
-# # Load Llama 2 model and tokenizer
-# model_name = "meta-llama/Llama-2-7b-hf"  # Replace with the specific Llama 2 model variant you want to use
-# tokenizer = AutoTokenizer.from_pretrained(model_name)
-# model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto", torch_dtype=torch.float16)
-
 # For llama 3.1 evaluation
 model = OllamaLLM(model="llama3.1")
 
@@ -39,11 +34,23 @@ def query_ollama(question):
         response = response.get("text", "")
     return response
 
+def ask_binary_question(question, response):
+    """
+    Ask the model whether the response to a question is 'Yes' or 'No'.
+    """
+    evaluation_prompt = f"""
+    Question: {question}
+    Response: {response}
+    Based on the response, is the answer to the question 'Yes' or 'No'? Answer with only 'Yes' or 'No'.
+    """
+    return model(evaluation_prompt).strip()
+
+
 with open('ground_truth.json', 'r') as f:
     ground_truth = json.load(f)
 
 evaluation_results = {}
-i = 0
+i = 1
 right_answer = 0
 n = 20
 
@@ -57,24 +64,40 @@ for entry in ground_truth:
         
         generated_words = normalize_text(response)
         correct_words = normalize_text(correct_answer)
-        
-        if correct_words.issubset(generated_words) or generated_words.issubset(correct_words):
+        generated_words = normalize_text(response)  # Normalize the generated answer
+        generated_binary = ask_binary_question(question, response)
+
+       # Use the model to determine the binary answer
+        generated_response = generated_binary + " " + response
+        generated_sentence = normalize_text(generated_response)
+
+        if correct_words.issubset(generated_sentence) or generated_sentence.issubset(correct_words): # Check if all the words of the correct answer are in the generated answer
+            correct = 1
             right_answer += 1
             score = 1
         else:
             score = 0
-        
+
+        # Save the question, generated response, correct answer, and similarity score
         evaluation_results[question] = {
-            "generated_answer": response,
+            "generated_answer": generated_response,
             "correct_answer": correct_answer,
             "Match Score": score
         }
+        print(f"Evaluating Question: {question}")
+        print(f"Generated Answer: {generated_response}")
+        print(f"Correct Answer: {correct_answer}")
+        print(f"Match Score: {score}")
+        print("=" * 50)
     except Exception as e:
         print(f"Error processing question: {question}. Error: {e}")
     i += 1
 
-with open('Ollama_evaluation_results_20.json', 'w') as f:
+total_accuracy = right_answer * 100 / (n + 1)
+evaluation_results["Total Accuracy"] = total_accuracy
+
+with open('Llama_evaluation_results_20.json', 'w') as f:
     json.dump(evaluation_results, f, indent=2)
 
-total_questions = min(len(ground_truth), n + 1)
-print("Total Accuracy", right_answer * 100 / total_questions)
+print("Evaluation complete! Results saved to `evaluation_results_20.json`.")
+print("Total Accuracy:", total_accuracy)
