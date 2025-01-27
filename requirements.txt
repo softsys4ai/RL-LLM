@@ -9,3 +9,4 @@ python-dotenv
 sentence_transformers
 torch
 torchvision
+tf-keras

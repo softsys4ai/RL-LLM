@@ -26,7 +26,7 @@ if "content" in st.session_state:
 
     if st.button("Let's go"):
         if question:
-            st.write("Analyzing the content...")
+            st.write("Thinking...")
 
             # Provide the content with Ollama
             chunks = split_content(st.session_state.content)
