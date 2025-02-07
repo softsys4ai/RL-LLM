@@ -2,6 +2,7 @@ import json
 import streamlit as st
 from langchain_ollama import OllamaLLM
 import string
+import numpy as np
 from parse import (
     search,
     extract_body_content,
@@ -20,10 +21,17 @@ with open('ground_truth.json', 'r') as f:
 
 # Prepare a dictionary to store model outputs and similarity scores
 evaluation_results = {}
+total_perplexity = 0
 i = 1
 right_answer = 0
-n = 20
+n = 5
 
+def calculate_perplexity(text):
+    words = text.split()
+    probabilities = np.full(len(words), 1 / len(words))  # Assume uniform distribution
+    log_prob = np.log(probabilities)
+    perplexity = np.exp(-np.mean(log_prob))
+    return perplexity
 
 def normalize_text(text):
     # Remove punctuation and convert to lowercase
@@ -54,19 +62,24 @@ def ask_binary_question(question, response):
     Response: {response}
     Based on the response, is the answer to the question 'Yes' or 'No'? Answer with only 'Yes' or 'No'.
     """
-    return model(evaluation_prompt).strip()
+    return model.invoke(evaluation_prompt).strip()
 
 # Loop through the questions in the ground_truth file
 for entry in ground_truth:
     if i > n:
         break
     try:
-        question = entry["question"]
+        input_question = entry["question"]
         correct_answer = entry["answer"]
+    
+        print("This is the question:", input_question)
+        question = input_question.replace(" ", "+")
+        # content = search(f"https://www.google.com/search?q={question}")
 
-        print("This is the question:", question)
-        question = question.replace(" ", "+")
-        content = search(f"https://www.google.com/search?q={question}")
+        # Avoid scraping Google directly (Use an alternative)
+        url = f"https://lite.duckduckgo.com/lite?q={question}"
+        content = search(url)
+        
         body_content = extract_body_content(content)
         cleaned_content = clean_body_content(body_content)
         st.session_state.content = cleaned_content
@@ -94,25 +107,31 @@ for entry in ground_truth:
         # else:
         #     score = 0
         # Save the question, generated response, correct answer, and similarity score
+        evaluation_results[question] = {}
+        perplexity = calculate_perplexity(response)
+        evaluation_results[question]["Perplexity"] = perplexity
+
         evaluation_results[question] = {
             "generated_answer": generated_response,
             "correct_answer": correct_answer,
-            "Match Score": score
+            "Match Score": score,
+            "Perplexity": perplexity
         }
         print(f"Generated Answer: {generated_response}")
         print(f"Correct Answer: {correct_answer}")
         print(f"Match Score: {score}")
+        print(f"Perplexity: {perplexity}")
         print("=" * 50)
+        total_perplexity = total_perplexity + perplexity
     except Exception as e:
         print(f"Error processing question: {question}. Error: {e}")
     i += 1
 
-
 total_accuracy = right_answer * 100 / (n + 1)
 evaluation_results["Total Accuracy"] = total_accuracy
-
-with open('evaluation_results_20.json', 'w') as f:
+evaluation_results["Total Perplexity"] = total_perplexity
+with open('evaluation_results_5.json', 'w') as f:
     json.dump(evaluation_results, f, indent=2)
 
-print("Evaluation complete! Results saved to `evaluation_results_20.json`.")
+print("Evaluation complete! Results saved to `evaluation_results_5.json`.")
 print("Total Accuracy:", total_accuracy)

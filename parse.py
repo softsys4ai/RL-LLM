@@ -8,7 +8,8 @@ from bs4 import BeautifulSoup
 from sentence_transformers import SentenceTransformer, util
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import re
-
+import requests
+import streamlit as st
 
 template = (
     "You are tasked with answering the following question based on the context provided in the question itself and the content. (Don't mention the question in your answer)"
@@ -71,38 +72,61 @@ def parse(chunks, question):
 
     highest_relevance = -1
     best_response = ""
-
+    i = 0
     # Process all chunks and evaluate relevance
     for chunk in chunks:
         response = chain.invoke({"question": question, "content": chunk})
-        # print("Batch {}/{}: {}\n".format(chunk, len(chunks), response))
+
         # Evaluate the relevance of the response to the question
         relevance = evaluate_relevance(question, response)
 
+        # # Print chunk and its score
+        # print(f"Chunk {i+1}: {chunk}...")
+        # print(f"Relevance Score: {relevance}")
+        # print("=" * 50)
+        
         if relevance > highest_relevance:
             highest_relevance = relevance
             best_response = response
-
+        i = i + 1
     return best_response
 
 
 
-def search(website):
+# def search(website):
 
-    chrome_driver_path = "./chromedriver"
-    options = webdriver.ChromeOptions()
-    options.add_argument("--headless")
-    driver = webdriver.Chrome(service=Service(chrome_driver_path), options=options)
+#     chrome_driver_path = "./chromedriver"
+#     options = webdriver.ChromeOptions()
+#     options.add_argument("--headless")
+#     driver = webdriver.Chrome(service=Service(chrome_driver_path), options=options)
+    
+#     try:
+#         driver.get(website)
+#         print("Page loaded...")
+#         html = driver.page_source
 
+#         return html
+#     finally:
+#         driver.quit()
+
+# Tor Configuration
+TOR_PROXY = "socks5h://127.0.0.1:9050"
+proxies = {
+    "http": TOR_PROXY,
+    "https": TOR_PROXY
+}
+headers = {
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"
+}
+def search(url):
+    """Make a request through Tor."""
     try:
-        driver.get(website)
-        print("Page loaded...")
-        html = driver.page_source
-
-        return html
-    finally:
-        driver.quit()
-
+        response = requests.get(url, headers=headers, proxies=proxies, timeout=10)
+        response.raise_for_status()
+        return response.text
+    except requests.exceptions.RequestException as e:
+        st.error(f"Failed to fetch data: {e}")
+        return None
 
 def extract_body_content(html_content):
     soup = BeautifulSoup(html_content, "html.parser")
@@ -127,7 +151,7 @@ def clean_body_content(body_content):
     return cleaned_content
 
 
-def split_content(content, max_length=3000):
+def split_content(dom_content, max_length=3000):
     return [
-        content[i : i + max_length] for i in range(0, len(content), max_length)
+        dom_content[i : i + max_length] for i in range(0, len(dom_content), max_length)
     ]
