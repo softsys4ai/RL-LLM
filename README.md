@@ -35,7 +35,7 @@ This project is an **AI Web Scraper** built with Streamlit that leverages the **
    pip install -r requirements.txt
    
 3. Set Google Custom Search API credentials:
-   - Get your "Custom Search JSON API" from ([here][https://developers.google.com/custom-search/v1/introduction/?apix=true]).
+   - Get your "Custom Search JSON API" from ([here](https://developers.google.com/custom-search/v1/introduction/?apix=true)).
    - Get your Google Custom Search Engine ID from ([here]([https://cse.google.com/cse/all))).
       - Click "Add" or "Create a new search engine"
       - Enter a name for your search engine.
