@@ -65,7 +65,6 @@ def evaluate_relevance(question, response):
         raise ValueError(f"Could not extract a relevance score from: {relevance_score}")
 
 
-
 def parse(chunks, question):
     prompt = PromptTemplate.from_template(template)
     chain = prompt | model
@@ -79,11 +78,12 @@ def parse(chunks, question):
 
         # Evaluate the relevance of the response to the question
         relevance = evaluate_relevance(question, response)
-
-        # # Print chunk and its score
-        # print(f"Chunk {i+1}: {chunk}...")
-        # print(f"Relevance Score: {relevance}")
-        # print("=" * 50)
+        body_content = extract_body_content(chunk)
+        cleaned_content = clean_body_content(body_content)
+        # Print chunk and its score
+        print(f"Chunk {i+1}: {cleaned_content}...")
+        print(f"Relevance Score: {relevance}")
+        print("=" * 50)
         
         if relevance > highest_relevance:
             highest_relevance = relevance
@@ -92,7 +92,23 @@ def parse(chunks, question):
     return best_response
 
 
-
+def search(website):
+    API_KEY = "AIzaSyAwEoykZCt4HDAumNZ4vnETwfx3f0Q" 
+    params = {
+        "api_key": API_KEY,
+        "engine": "google",  # Using Google search engine
+        "q": website,  # The query or website URL
+        "num": 10  # Number of results
+    }
+    
+    response = requests.get("https://serpapi.com/search", params=params)
+    
+    if response.status_code == 200:
+        return response.json()  # Returns the scraped HTML or JSON data
+    else:
+        print(f"Error: {response.status_code}, {response.text}")
+        return None
+    
 # def search(website):
 
 #     chrome_driver_path = "./chromedriver"
@@ -109,32 +125,12 @@ def parse(chunks, question):
 #     finally:
 #         driver.quit()
 
-# Tor Configuration
-TOR_PROXY = "socks5h://127.0.0.1:9050"
-proxies = {
-    "http": TOR_PROXY,
-    "https": TOR_PROXY
-}
-headers = {
-    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"
-}
-def search(url):
-    """Make a request through Tor."""
-    try:
-        response = requests.get(url, headers=headers, proxies=proxies, timeout=10)
-        response.raise_for_status()
-        return response.text
-    except requests.exceptions.RequestException as e:
-        st.error(f"Failed to fetch data: {e}")
-        return None
-
 def extract_body_content(html_content):
     soup = BeautifulSoup(html_content, "html.parser")
     body_content = soup.body
     if body_content:
         return str(body_content)
     return ""
-
 
 def clean_body_content(body_content):
     soup = BeautifulSoup(body_content, "html.parser")
@@ -149,7 +145,6 @@ def clean_body_content(body_content):
     )
 
     return cleaned_content
-
 
 def split_content(dom_content, max_length=3000):
     return [
