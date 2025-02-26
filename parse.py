@@ -93,7 +93,7 @@ def parse(chunks, question):
 
 
 def search(website):
-    API_KEY = "AIzaSyAwEoykZCt4HDAumNZ4vnETwfx3f0Q" 
+    API_KEY = "Your API Key" 
     params = {
         "api_key": API_KEY,
         "engine": "google",  # Using Google search engine
