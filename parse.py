@@ -10,6 +10,12 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 import re
 import requests
 import streamlit as st
+from sklearn.metrics.pairwise import cosine_similarity
+from sentence_transformers import SentenceTransformer
+
+GOOGLE_API_KEY = "Your API Key"  
+SEARCH_ENGINE_ID = "Your Search Engine ID"
+
 
 template = (
     "You are tasked with answering the following question based on the context provided in the question itself and the content. (Don't mention the question in your answer)"
@@ -23,9 +29,28 @@ template = (
     "5. Answer as short as possible."
 )
 
+llama_template = (
+    "You are tasked with answering the following question."
+    "question: {question}\n\n"
+    "Please follow these instructions carefully: \n\n"
+    "1. Only pay attention to the question in question and don't answer other questions."
+    "2. Provide accurate and complete answers to the best of your knowledge."
+    "3. Answer as short as possible."
+)
+
 
 model = OllamaLLM(model="llama3.1")
+sentence_model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")  # For similarity checks
+embedder = SentenceTransformer("all-MiniLM-L6-v2")
 
+def query_ollama(question):
+    prompt = PromptTemplate.from_template(llama_template)
+    chain = prompt | model
+
+    response = chain.invoke({"question": question})
+    if isinstance(response, dict):
+        response = response.get("text", "")
+    return response
 
 def normalize_scores(scores):
     """Normalize scores to a 0-1 range."""
@@ -59,6 +84,7 @@ def evaluate_relevance(question, response):
     
     # Use regex to extract the numeric value from the response
     match = re.search(r"(\d+(\.\d+)?)", relevance_score)
+    print(response)
     if match:
         return float(match.group(1))  # Extracted number as a float
     else:
@@ -89,41 +115,56 @@ def parse(chunks, question):
             highest_relevance = relevance
             best_response = response
         i = i + 1
-    return best_response
+    return best_response, highest_relevance
 
 
-def search(website):
-    API_KEY = "AIzaSyAwEoykZCt4HDAumNZ4vnETwfx3f0Q" 
+def get_similarity_score(answer1, answer2):
+    """Compute similarity between two answers using SentenceTransformer."""
+    embedding1 = sentence_model.encode(answer1, convert_to_tensor=True)
+    embedding2 = sentence_model.encode(answer2, convert_to_tensor=True)
+    return util.pytorch_cos_sim(embedding1, embedding2).item()
+
+def get_most_repeated_answer(answers):
+    """Find the most repeated answer based on similarity."""
+    similarity_threshold = 0.75  # Threshold to consider answers as similar
+    grouped_answers = {}
+    
+    for i, ans1 in enumerate(answers):
+        found_group = None
+        for group in grouped_answers:
+            if get_similarity_score(ans1, group) > similarity_threshold:
+                found_group = group
+                break
+        
+        if found_group:
+            grouped_answers[found_group].append(i)
+        else:
+            grouped_answers[ans1] = [i]
+    
+    # Sort groups by size
+    sorted_groups = sorted(grouped_answers.items(), key=lambda x: len(x[1]), reverse=True)
+    ranked_answers = [group[0] for group in sorted_groups]
+    
+    return ranked_answers
+
+def search_api(query):
+    """Fetch the top 3 search results using Google Custom Search API."""
+    search_url = "https://www.googleapis.com/customsearch/v1"
+
     params = {
-        "api_key": API_KEY,
-        "engine": "google",  # Using Google search engine
-        "q": website,  # The query or website URL
-        "num": 10  # Number of results
+        "key": GOOGLE_API_KEY,
+        "cx": SEARCH_ENGINE_ID,
+        "q": query + " -filetype:pdf",  # Exclude PDFs
+        "num": 10  # Fetch the top 10 results
     }
-    
-    response = requests.get("https://serpapi.com/search", params=params)
-    
+
+    response = requests.get(search_url, params=params)
     if response.status_code == 200:
-        return response.json()  # Returns the scraped HTML or JSON data
-    else:
-        print(f"Error: {response.status_code}, {response.text}")
-        return None
-    
-# def search(website):
-
-#     chrome_driver_path = "./chromedriver"
-#     options = webdriver.ChromeOptions()
-#     options.add_argument("--headless")
-#     driver = webdriver.Chrome(service=Service(chrome_driver_path), options=options)
-    
-#     try:
-#         driver.get(website)
-#         print("Page loaded...")
-#         html = driver.page_source
-
-#         return html
-#     finally:
-#         driver.quit()
+        search_results = response.json()
+        if "items" in search_results:
+            urls = [item.get("link", "") for item in search_results["items"]]
+            return urls  # Ensure it's a list, NOT a single string
+    return []
 
 def extract_body_content(html_content):
     soup = BeautifulSoup(html_content, "html.parser")
@@ -150,3 +191,47 @@ def split_content(dom_content, max_length=3000):
     return [
         dom_content[i : i + max_length] for i in range(0, len(dom_content), max_length)
     ]
+
+
+def scoring_system(parsed_results, highest_relevances, input_prompt):
+        reference_answer = model.invoke(input_prompt)
+        # Compute scores
+        scores = [0, 0, 0]  # Initialize scores for each website
+        repeatation_scores = [0, 0, 0]
+        similarity_score = [0, 0, 0]
+        # **Base Score for Each Website**
+        base_scores = [6, 4, 2]  # First site gets 6, second 4, third 2
+        for i in range(3):
+            scores[i] += base_scores[i]
+
+        # **Similarity to Llama 3.1 Answer**
+        ref_embedding = embedder.encode([reference_answer])
+        parsed_embeddings = embedder.encode(parsed_results)
+
+        similarities = [cosine_similarity([parsed_embeddings[i]], ref_embedding)[0][0] for i in range(3)]
+        sorted_indices = sorted(range(3), key=lambda i: similarities[i], reverse=True)
+
+        # Assign similarity-based scores
+        similarity_scores = [2, 1, 0]  # Most similar → 2, Second most → 1, Least → 0
+        for rank, idx in enumerate(sorted_indices):
+            scores[idx] += similarity_scores[rank]
+            similarity_score[idx] = similarity_scores[rank]
+
+        # **Answer Repetition Score**
+        # Compute pairwise similarity among parsed answers
+        similarity_matrix = cosine_similarity(parsed_embeddings)
+
+        # Count similarity occurrences
+        similarity_counts = [sum(similarity_matrix[i]) for i in range(3)]
+        sorted_rep_indices = sorted(range(3), key=lambda i: similarity_counts[i], reverse=True)
+
+        # Assign repetition-based scores
+        rep_scores = [6, 4, 0]  # Most repeated → 6, Second most → 4, Least → 0
+        for rank, idx in enumerate(sorted_rep_indices):
+            scores[idx] += rep_scores[rank]
+            repeatation_scores[idx] = rep_scores[rank]
+            scores[idx] *= highest_relevances[idx]
+    
+        best_index = scores.index(max(scores))
+
+        return parsed_results, scores, similarity_score, repeatation_scores, similarities, parsed_results[best_index]
