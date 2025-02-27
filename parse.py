@@ -235,3 +235,4 @@ def scoring_system(parsed_results, highest_relevances, input_prompt):
         best_index = scores.index(max(scores))
 
         return parsed_results, scores, similarity_score, repeatation_scores, similarities, parsed_results[best_index]
+

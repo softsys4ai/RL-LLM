@@ -33,11 +33,17 @@ This project is an **AI Web Scraper** built with Streamlit that leverages the **
 2. Install the required dependencies:
    ```bash
    pip install -r requirements.txt
-   brew install tor
    
-3. Set up ChromeDriver: (Skip this step for now)
-   - Download the correct version of ChromeDriver for your browser. ([link]( https://googlechromelabs.github.io/chrome-for-testing/)) 
-   - Place it in the root directory or specify its path in `parse.py`.
+3. Set Google Custom Search API credentials:
+   - Get your "Custom Search JSON API" from [here](https://developers.google.com/custom-search/v1/introduction/?apix=true).
+   - Get your Google Custom Search Engine ID from [here](https://cse.google.com/cse/all).
+      - Click "Add" or "Create a new search engine"
+      - Enter a name for your search engine.
+      - Under "Sites to Search", you can either:
+            Enter a specific website (e.g., wikipedia.org)
+            OR set it to search the entire web by entering *
+      - Click "Create"
+   - Place your API Key and ID into the `main.py` file.
      
 4. Install Ollama: Download the correct version of Llama 3.1 for your device.
    
