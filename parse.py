@@ -13,20 +13,20 @@ import streamlit as st
 from sklearn.metrics.pairwise import cosine_similarity
 from sentence_transformers import SentenceTransformer
 
-GOOGLE_API_KEY = "Your API Key"  
-SEARCH_ENGINE_ID = "Your Search Engine ID"
+GOOGLE_API_KEY = ""
+SEARCH_ENGINE_ID = ""
 
 
 template = (
     "You are tasked with answering the following question based on the context provided in the question itself and the content. (Don't mention the question in your answer)"
     "question: {question}\n\n"
     "content: {content}\n\n"
-    "Please follow these instructions carefully: \n\n"
-    "1. Only pay attention to the question in question and don't answer to other questions."
-    "2. Provide accurate and complete answers to the best of your knowledge."
-    "3. If there is any exact information corresponding to the question in content, check your answers with it, else answer based on your own knowledge."
-    "4. Look content for real-time access if needed."
-    "5. Answer as short as possible."
+    "Answer the question based on the provided content."
+    # "1. Only pay attention to the question in question and don't answer to other questions."
+    # "2. Provide accurate and complete answers to the best of your knowledge."
+    # "3. If there is any exact information corresponding to the question in content, check your answers with it, else answer based on your own knowledge."
+    # "4. Look content for real-time access if needed."
+    # "5. Answer as short as possible."
 )
 
 llama_template = (
@@ -72,10 +72,10 @@ def evaluate_relevance(question, response):
     A possible method could involve a language model's judgment of how well the response answers the question.
     """
     prompt_relevance = f"""
-    Evaluate how relevant the following response is to the question:
+    Evaluate how relevant and informative the following response is to the question:
     Question: {question}
     Response: {response}
-    Rate the relevance on a scale from 0 (not relevant) to 1 (very relevant).
+    Rate the response on a scale from 0 (not relevant and not informative) to 1 (very relevant and informative).
     """
 
     # Pass the prompt directly as a string to the model
@@ -99,7 +99,7 @@ def parse(chunks, question):
     best_response = ""
     i = 0
     # Process all chunks and evaluate relevance
-    for chunk in chunks:
+    for chunk in chunks[1:2]:
         response = chain.invoke({"question": question, "content": chunk})
 
         # Evaluate the relevance of the response to the question
@@ -230,9 +230,8 @@ def scoring_system(parsed_results, highest_relevances, input_prompt):
         for rank, idx in enumerate(sorted_rep_indices):
             scores[idx] += rep_scores[rank]
             repeatation_scores[idx] = rep_scores[rank]
-            scores[idx] *= highest_relevances[idx]
+            # scores[idx] *= highest_relevances[idx]
     
         best_index = scores.index(max(scores))
 
         return parsed_results, scores, similarity_score, repeatation_scores, similarities, parsed_results[best_index]
-

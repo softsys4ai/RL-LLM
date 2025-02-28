@@ -1,0 +1,16 @@
+{
+  "What+government+position+was+held+by+the+woman+who+portrayed+Corliss+Archer+in+the+film+Kiss+and+Tell?": {
+    "generated_answer": "No. The government position held by the woman who portrayed Corliss Archer in the film \"Kiss and Tell\" is not explicitly stated in the provided content. However, it can be inferred that the question pertains to the actress Patty McCormack, who played the title role in the 1957 film.\n\nUnfortunately, there is no information in the provided content regarding Patty McCormack's government position or career outside of her acting work. The content appears to be related to a GitHub repository and discussion forum, with conversations about AI, devops, security, software development, and other topics unrelated to Patty McCormack or her personal life.",
+    "correct_answer": "Chief of Protocol",
+    "Match Score": 0,
+    "Perplexity": 101.00000000000003
+  },
+  "Are+the+Laleli+Mosque+and+Esma+Sultan+Mansion+located+in+the+same+neighborhood?": {
+    "generated_answer": "No Based on the provided content, there is no information that directly answers whether the Laleli Mosque and Esma Sultan Mansion are located in the same neighborhood. The content appears to be about a GitHub repository for a QA agent selection project and does not mention either of these locations. Therefore, it is not possible to determine if they are in the same neighborhood based on this information.",
+    "correct_answer": "no",
+    "Match Score": 1,
+    "Perplexity": 67.00000000000004
+  },
+  "Total Accuracy": 16.666666666666668,
+  "Total Perplexity": 168.00000000000006
+}

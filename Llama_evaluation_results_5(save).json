@@ -1,0 +1,34 @@
+{
+  "Were Scott Derrickson and Ed Wood of the same nationality?": {
+    "generated_answer": "Yes. Yes, they are American. Scott Derrickson is a film director and Ed Wood is a filmmaker.",
+    "correct_answer": "yes",
+    "Match Score": 1,
+    "Perplexity": 15.999999999999998
+  },
+  "What government position was held by the woman who portrayed Corliss Archer in the film Kiss and Tell?": {
+    "generated_answer": "No. Marilyn Monroe played Corliss Archer in Kiss and Tell, but I couldn't find information about her holding a government position.",
+    "correct_answer": "Chief of Protocol",
+    "Match Score": 0,
+    "Perplexity": 19.999999999999996
+  },
+  "What science fantasy young adult series, told in first person, has a set of companion books narrating the stories of enslaved worlds and alien species?": {
+    "generated_answer": "Yes. The Lunar Chronicles by Marissa Meyer series' companion books, Fairest and Stars Above, are not part of the main series.\n The correct answer is The Illuminae Files by Amie Kaufman and Jay Kristoff's companion book, the Kiera Yavener narrated novella, but the most accurate one would be:\nThe set of companion books you're referring to are actually the novellas that tell the stories of various planets in The 3rd series of this set of science fantasy young adult novels.",
+    "correct_answer": "Animorphs",
+    "Match Score": 0,
+    "Perplexity": 79.00000000000007
+  },
+  "Are the Laleli Mosque and Esma Sultan Mansion located in the same neighborhood?": {
+    "generated_answer": "Yes. Yes, they are both located in the Laleli neighborhood of Istanbul, Turkey.",
+    "correct_answer": "no",
+    "Match Score": 0,
+    "Perplexity": 12.000000000000005
+  },
+  "The director of the romantic comedy \"Big Stone Gap\" is based in what New York city?": {
+    "generated_answer": "Yes. The director of \"Big Stone Gap\" is Lawrence Mark, who is based in New York City.",
+    "correct_answer": "Greenwich Village, New York City",
+    "Match Score": 0,
+    "Perplexity": 15.999999999999998
+  },
+  "Total Accuracy": 16.666666666666668,
+  "Total Perplexity": 143.00000000000006
+}

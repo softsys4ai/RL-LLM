@@ -10,7 +10,7 @@ from parse import (
     scoring_system
 )
 
-from sklearn.metrics.pairwise import cosine_similarity
+# from sklearn.metrics.pairwise import cosine_similarity
 from sentence_transformers import SentenceTransformer
 
 # Initialize Ollama model and sentence transformer for similarity scoring
@@ -31,6 +31,7 @@ if input_prompt:
     st.write("🔎 **Search Results:**", search_results)
     valid_links = []
     st.session_state.contents = []
+    
     for url in search_results:
         if len(valid_links) >= 3:
             break  # Stop once we have 3 valid links

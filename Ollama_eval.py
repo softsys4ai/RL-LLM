@@ -59,7 +59,7 @@ evaluation_results = {}
 total_perplexity = 0
 i = 1
 right_answer = 0
-n = 5
+n = 20
 
 for entry in ground_truth:
     if i > n:
@@ -110,5 +110,5 @@ evaluation_results["Total Perplexity"] = total_perplexity
 with open('Llama_evaluation_results_20.json', 'w') as f:
     json.dump(evaluation_results, f, indent=2)
 
-print("Evaluation complete! Results saved to `Llama_evaluation_results_5.json`.")
+print("Evaluation complete! Results saved to `Llama_evaluation_results_20.json`.")
 print("Total Accuracy:", total_accuracy)

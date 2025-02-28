@@ -1,19 +1,28 @@
 import json
 import streamlit as st
+import requests
 from langchain_ollama import OllamaLLM
 import string
 import numpy as np
 from parse import (
-    search,
+    search_api,
     extract_body_content,
     clean_body_content,
     split_content,
-    parse
+    parse,
+    scoring_system
 )
 
 
-# Initialize the model
+# from sklearn.metrics.pairwise import cosine_similarity
+from sentence_transformers import SentenceTransformer
+
+# Initialize Ollama model and sentence transformer for similarity scoring
 model = OllamaLLM(model="llama3.1")
+embedder = SentenceTransformer("all-MiniLM-L6-v2")
+
+# Streamlit UI
+st.title("Evaluating...")
 
 # Load the ground_truth file (questions and answers)
 with open('ground_truth.json', 'r') as f:
@@ -37,13 +46,6 @@ def normalize_text(text):
     # Remove punctuation and convert to lowercase
     return set(word.strip(string.punctuation).lower() for word in text.split())
 
-# # Function to determine if the question expects a binary answer
-# def is_yes_no_question(question):
-#     """
-#     Check if the question is likely to expect a Yes/No answer.
-#     """
-#     yes_no_indicators = ["is", "are", "does", "do", "can", "could", "should", "would", "will", "was", "were", "did"]
-#     return question.strip().lower().split()[0] in yes_no_indicators
 
 def jaccard_similarity(set1, set2):
     """
@@ -74,22 +76,50 @@ for entry in ground_truth:
     
         print("This is the question:", input_question)
         question = input_question.replace(" ", "+")
-        # content = search(f"https://www.google.com/search?q={question}")
+        search_results = search_api(question)
 
-        # Avoid scraping Google directly (Use an alternative)
-        url = f"https://lite.duckduckgo.com/lite?q={question}"
-        content = search(url)
+        valid_links = []
+        st.session_state.contents = []
+
+        for url in search_results:
+            if len(valid_links) >= 3:
+                break  # Stop once we have 3 valid links
+            
+            response = requests.get(url)
+            raw_content = response.text
+            body_content = extract_body_content(raw_content)
+            cleaned_content = clean_body_content(body_content)
+
+            if response.status_code == 200 and cleaned_content:
+                valid_links.append(url)
+                st.session_state.contents.append(cleaned_content)
+
+
+        reference_answer = model.invoke(input_question)
+        parsed_results = []
+        highest_relevances = []
+        for url in valid_links:
+            response = requests.get(url)
+            raw_content = response.text
+            body_content = extract_body_content(raw_content)
+            cleaned_content = clean_body_content(body_content)
+            chunks = split_content(cleaned_content)
+            print(chunks[2])
+            parsed_result, highest_relevance = parse(chunks, input_question)
+            parsed_results.append(parsed_result)
+            highest_relevances.append(highest_relevance)
         
-        body_content = extract_body_content(content)
-        cleaned_content = clean_body_content(body_content)
-        st.session_state.content = cleaned_content
-        chunks = split_content(st.session_state.content)
-        response = parse(chunks, question)
+        # Save parsed results
+        st.session_state.parsed_results = parsed_results
+        parsed_results, scores, sorted_indices, sorted_rep_indices, similarities, best_response = scoring_system(parsed_results, highest_relevances, input_question)
+
+
         correct_words = normalize_text(correct_answer)  # Normalize the correct answer
-        generated_words = normalize_text(response)  # Normalize the generated answer
-        generated_binary = ask_binary_question(question, response)
+        generated_words = normalize_text(best_response)  # Normalize the generated answer
+        generated_binary = ask_binary_question(question, best_response)
+
         # Use the model to determine the binary answer
-        generated_response = generated_binary + " " + response
+        generated_response = generated_binary + " " + best_response
         generated_sentence = normalize_text(generated_response)
 
         if correct_words.issubset(generated_sentence) or generated_sentence.issubset(correct_words): # Check if all the words of the correct answer are in the generated answer
@@ -108,7 +138,7 @@ for entry in ground_truth:
         #     score = 0
         # Save the question, generated response, correct answer, and similarity score
         evaluation_results[question] = {}
-        perplexity = calculate_perplexity(response)
+        perplexity = calculate_perplexity(best_response)
         evaluation_results[question]["Perplexity"] = perplexity
 
         evaluation_results[question] = {
@@ -126,12 +156,13 @@ for entry in ground_truth:
     except Exception as e:
         print(f"Error processing question: {question}. Error: {e}")
     i += 1
+    print(i)
 
 total_accuracy = right_answer * 100 / (n + 1)
 evaluation_results["Total Accuracy"] = total_accuracy
 evaluation_results["Total Perplexity"] = total_perplexity
-with open('evaluation_results_5.json', 'w') as f:
+with open('evaluation_results_20.json', 'w') as f:
     json.dump(evaluation_results, f, indent=2)
 
-print("Evaluation complete! Results saved to `evaluation_results_5.json`.")
+print("Evaluation complete! Results saved to `evaluation_results_20.json`.")
 print("Total Accuracy:", total_accuracy)

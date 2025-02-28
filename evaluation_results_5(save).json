@@ -1,0 +1,34 @@
+{
+  "Were+Scott+Derrickson+and+Ed+Wood+of+the+same+nationality?": {
+    "generated_answer": "Yes. Based on the provided context, Scott Derrickson and Ed Wood are not mentioned together, but since you asked about their nationality, I found that they are both American filmmakers. Scott Derrickson is known for directing movies like \"Doctor Strange\" and \"The Black Phone\", while Ed Wood was a film director and actor who made cult classic films like \"Plan 9 from Outer Space\".",
+    "correct_answer": "yes",
+    "Match Score": 1,
+    "Perplexity": 62.99999999999999
+  },
+  "What+government+position+was+held+by+the+woman+who+portrayed+Corliss+Archer+in+the+film+Kiss+and+Tell?": {
+    "generated_answer": "No I was unable to determine the government position held by the woman who portrayed Corliss Archer in the film \"Kiss and Tell\" from the provided context.",
+    "correct_answer": "Chief of Protocol",
+    "Match Score": 0,
+    "Perplexity": 25.99999999999999
+  },
+  "What+science+fantasy+young+adult+series,+told+in+first+person,+has+a+set+of+companion+books+narrating+the+stories+of+enslaved+worlds+and+alien+species?": {
+    "generated_answer": "Yes. The science fantasy young adult series, told in first person, has a set of companion books narrating the stories of enslaved worlds and alien species is known as \"Rampart\" or more specifically, it's also related to \"The Red Queen's War\" series, but most likely it's the \"Lightbringer\" series by Brent Weeks.",
+    "correct_answer": "Animorphs",
+    "Match Score": 0,
+    "Perplexity": 51.0
+  },
+  "Are+the+Laleli+Mosque+and+Esma+Sultan+Mansion+located+in+the+same+neighborhood?": {
+    "generated_answer": "No No, they are not located in the same neighborhood. The Laleli Mosque and Esma Sultan Mansion are both located in Istanbul, Turkey, but they are in different neighborhoods. Laleli Mosque is situated in the Laleli district, while Esma Sultan Mansion is located in the Beyo\u011flu district.",
+    "correct_answer": "no",
+    "Match Score": 1,
+    "Perplexity": 46.000000000000064
+  },
+  "The+director+of+the+romantic+comedy+\"Big+Stone+Gap\"+is+based+in+what+New+York+city?": {
+    "generated_answer": "No New York City is not explicitly mentioned in the context provided, however, I can tell you that it's not directly related to the information presented.",
+    "correct_answer": "Greenwich Village, New York City",
+    "Match Score": 0,
+    "Perplexity": 24.999999999999996
+  },
+  "Total Accuracy": 33.333333333333336,
+  "Total Perplexity": 211.00000000000006
+}
